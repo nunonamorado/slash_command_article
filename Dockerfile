@@ -10,6 +10,6 @@ RUN bundle install
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 3000
 
-CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "-p", "5000"]
+CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "-p", "3000"]
