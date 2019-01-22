@@ -2,5 +2,9 @@
     "version": 1,
     "features": {
         "cloud": "v2"
-    }  
+    },
+    "env": {
+        "SLACK_SIGNING_SECRET": "@slack-signing-secret",
+        "SLACK_VERIFICATION_TOKEN": "@slack-verification-token"
+    }
 }
