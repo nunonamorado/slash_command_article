@@ -1,7 +1,4 @@
 require "httparty"
-require "pry"
-
-MAPBOX_API_TOKEN = ENV["MAPBOX_API_TOKEN"]
 
 class SurfForecaster
   @@base_uri = "https://www.windguru.cz"
@@ -43,7 +40,7 @@ class SurfForecaster
       initstr: spot_model_fcst ? spot_model_fcst["initstr"] : "",
     }
 
-    info[:loc_map] = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/#{info[:lon]},#{info[:lat]},13,0,0/512x288@2x?access_token=#{MAPBOX_API_TOKEN}"
+    info[:loc_map] = "https://surforecaster-mapsproxy.now.sh/staticmap/?lat=#{info[:lat]}&lon=#{info[:lon]}"
     info
   rescue StandardError => e
     puts e.full_message
