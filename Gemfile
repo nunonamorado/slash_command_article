@@ -1,12 +1,12 @@
 source "https://rubygems.org/"
 
 gem "sinatra"
+gem "thin"
 gem "sinatra-contrib"
-gem "cksh_commander"
 gem "httparty"
-gem "rack-protection"
+gem "sinatra-slack", :git => 'https://github.com/nunonamorado/sinatra-slack.git'
 
-group :development, :test do
+group :development do
   gem "pry"
   gem "pry-byebug"
 end

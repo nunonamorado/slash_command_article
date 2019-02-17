@@ -1,4 +1,5 @@
 require "httparty"
+require "pry"
 
 class SurfForecaster
   @@base_uri = "https://www.windguru.cz"
@@ -62,7 +63,6 @@ class SurfForecaster
     response = HTTParty.get("#{@@base_uri}/int/iapi.php", options.merge(@@http_headers))
 
     data_vars = response.dig("fcst", "vars")
-
 
     return {
       spot_id: spot_id,

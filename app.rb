@@ -1,77 +1,70 @@
 require "sinatra/base"
-require "sinatra/json"
-require_relative "lib/surf_forecaster"
+require "sinatra/slack"
 
-require "cksh_commander"
-CKSHCommander.configure do |c|
-  c.commands_path = File.expand_path("../commands", __FILE__)
-end
+require_relative "./lib/surf_forecaster"
 
 class App < Sinatra::Base
+  register Sinatra::Slack::Signature
+  register Sinatra::Slack::Commands
+  register Sinatra::Slack::Actions
+
+  helpers Sinatra::Slack::Helpers
+
   configure :production, :development do
     enable :logging
+    set :threaded, false
   end
 
-  set :bind, "0.0.0.0"
+  verify_slack_request secret: ENV["SLACK_SIGNING_SECRET"]
+  commands_endpoint "/slack/commands"
+  actions_endpoint "/slack/actions"
 
-  get "/search_spot" do
-    result = SurfForecaster.search_spot(params['name']) unless params['name'].empty?
-    json result
+  command "/surf *sub_command :spot_name" do |sub_command, spot_name|
+    process_command sub_command, spot_name
   end
 
-  get "/spot_forecast" do
+  action "spot_info" do |spot_id|
+    fetch_forecast_and_respond spot_id
+  end
 
-    unless params['id'].empty?
-      spot_info = SurfForecaster.get_spot_info(params['id'])
-      result = SurfForecaster.get_spot_forecast(params['id'], spot_info[:initstr])
-      result = result.merge(spot_info)
+  private
+
+  def process_command(granularity, spot_name)
+    spots = SurfForecaster.search_spot(spot_name)
+
+    if spots.size == 1
+      spot_id = spots.first["data"]
+      return fetch_forecast_and_respond(spot_id)
     end
 
-    json result
-  end
+    slack_response "spot_info" do |r|
+      r.text = "Several spots found (#{spots.size})"
 
-  post "/forecaster" do
-    content_type "application/x-www-form-urlencoded"
+      r.attachment do |a|
+        a.fallback = "No surf spots found!"
+        a.title = "Please choose one from the following"
 
-    # in case someone already read it
-    request.body.rewind
-    # just to be sure that Slack payload is correctly decoded
-    decoded = URI.decode(request.body.read)
-    data = URI.decode_www_form(decoded).to_h
-
-    logger.info "received: #{data}"
-
-    command = data["command"][1..-1]
-    response = CKSHCommander::Runner.run(command, data)
-    json response.serialize
-  end
-
-  post "/slack/actions" do
-    content_type :json
-
-    payload = JSON.parse params["payload"]
-    logger.info "received: #{payload}"
-
-    if payload["type"] == "interactive_message" && payload["callback_id"] == "forecast"
-      action = payload["actions"].first
-
-      spot_id = action["value"]
-
-      spot_info = SurfForecaster.get_spot_info(spot_id)
-      result = SurfForecaster.get_spot_forecast(spot_id, spot_info[:initstr])
-
-      response = {
-        attachments: [
-          {
-            title: spot_info[:name],
-            text: "Optional text that appears within the attachment",
-            color: "#3AA3E3",
-            image_url: spot_info[:loc_map]
-          }
-        ]
-      }
+        spots.each do |spot|
+          a.action_button "surf_spot", spot["value"], spot["data"]
+        end
+      end
     end
+  end
 
-    json response
+  def build_forecast_message(forecast_info)
+    slack_response "spot_info" do |r|
+      r.text = "Here is the spot information:"
+      r.attachment do |a|
+        a.title = "Spot location: #{forecast_info[:name]}"
+        a.image_url = forecast_info[:loc_map]
+      end
+    end
+  end
+
+  def fetch_forecast_and_respond(spot_id)
+    spot_info = SurfForecaster.get_spot_info(spot_id)
+    forecast_info = SurfForecaster.get_spot_forecast(spot_id, spot_info[:initstr])
+    forecast_info.merge!(spot_info)
+    build_forecast_message(forecast_info)
   end
 end
