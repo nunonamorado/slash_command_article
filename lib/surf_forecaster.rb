@@ -41,7 +41,7 @@ class SurfForecaster
       initstr: spot_model_fcst ? spot_model_fcst["initstr"] : "",
     }
 
-    info[:loc_map] = "https://surforecaster-mapsproxy.now.sh/staticmap/?lat=#{info[:lat]}&lon=#{info[:lon]}"
+    info[:loc_map] = "https://979c69b6.ngrok.io/staticmap/#{info[:lon]},#{info[:lat]}"
     info
   rescue StandardError => e
     puts e.full_message

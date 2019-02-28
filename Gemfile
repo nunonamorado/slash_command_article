@@ -2,7 +2,7 @@ source "https://rubygems.org/"
 
 gem "sinatra"
 gem "thin"
-gem "sinatra-contrib"
+gem "rack-reverse-proxy"
 gem "httparty"
 gem "sinatra-slack", :git => 'https://github.com/nunonamorado/sinatra-slack.git'
 

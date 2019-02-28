@@ -1,22 +1,27 @@
 require "sinatra/base"
 require "sinatra/slack"
+require 'rack/reverse_proxy'
 
 require_relative "./lib/surf_forecaster"
 
+MAPBOX_URL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static'
+MAPBOX_TOKEN = ENV['MAPBOX_API_TOKEN']
+
 class App < Sinatra::Base
-  register Sinatra::Slack::Signature
-  register Sinatra::Slack::Commands
-  register Sinatra::Slack::Actions
-
-  helpers Sinatra::Slack::Helpers
-
+  register Sinatra::Slack
+  
   configure :production, :development do
     enable :logging
-    set :threaded, false
+    
+    before { logger.info "Received: #{params}"}
   end
 
-  verify_slack_request secret: ENV["SLACK_SIGNING_SECRET"]
-  commands_endpoint "/slack/commands"
+  use Rack::ReverseProxy do    
+    reverse_proxy /^\/staticmap\/?(.*)$/, "#{MAPBOX_URL}/$1,13,0,0/512x288@2x?access_token=#{MAPBOX_TOKEN}"
+  end
+
+  verify_slack_request ENV["SLACK_SIGNING_SECRET"]
+  commands_endpoint "/slack/commands", quick_reply: ":surfer: Fetching..."
   actions_endpoint "/slack/actions"
 
   command "/surf *sub_command :spot_name" do |sub_command, spot_name|
