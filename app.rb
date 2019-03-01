@@ -26,7 +26,7 @@ class App < Sinatra::Base
   end
 
   set :slack_secret, ENV['SLACK_SIGNING_SECRET']
-  commands_endpoint '/slack/commands', quick_reply: ':surfer: Fetching...'
+  commands_endpoint '/slack/commands', quick_reply: ':surfer: ...'
   actions_endpoint '/slack/actions'
 
   command '/surf *granularity :spot_name' do |granularity, spot_name|
@@ -75,9 +75,9 @@ class App < Sinatra::Base
   end
 
   def fetch_forecast_and_respond(_granularity, spot_id)
-    spot_info = SurfForecaster.get_spot_info(spot_id)
-    forecast_info = SurfForecaster.get_spot_forecast(spot_id, spot_info[:initstr])
-    forecast_info.merge!(spot_info)
-    build_forecast_message(forecast_info)
+    info = SurfForecaster.get_spot_info(spot_id)
+    forecast = SurfForecaster.get_spot_forecast(spot_id, info[:initstr])
+    info.merge!(forecast)
+    build_forecast_message(info)
   end
 end
