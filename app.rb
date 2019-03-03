@@ -77,18 +77,28 @@ class App < Sinatra::Base
 
   def fetch_forecast_and_respond(_granularity, spot_id)
     info = SurfForecaster.get_spot_info(spot_id)
-    forecast = SurfForecaster.get_spot_forecast(spot_id, info[:initstr])
-    info.merge!(forecast) if forecast
+
+    [25, 3].each do |model|
+      forecast = SurfForecaster.get_spot_forecast(
+        spot_id, model, info[:initstr]
+        )
+      info["model#{model}".to_sym] = forecast if forecast
+    end
 
     build_forecast_message(info)
   end
 
   def format_forecast_info(info)
-    data = info[:data]
+    data_m3 = info.dig(:model3, :data)
+    data_m25 = info.dig(:model25, :data)
+
     "Here is the information for _*#{info[:name]}*_ \n\n" \
-    "*Wave (m)*:           _#{data['HTSGW'].first}_\n" \
-    "*Wave Period (s)*:    _#{data['PERPW'].first}_\n" \
-    "*Wave Direction *:    _#{convert_direction(data['DIRPW'].first)}_\n\n" \
+    "*Wave (m)*:             _#{data_m25['HTSGW'].first}_\n" \
+    "*Wave Period (s)*:      _#{data_m25['PERPW'].first}_\n" \
+    "*Wave Direction*:       _#{convert_direction(data_m25['DIRPW'].first)}_\n" \
+    "*Wind Speed (knots)*:   _#{data_m3['WINDSPD'].first}_\n" \
+    "*Wind Direction*:       _#{convert_direction(data_m3['WINDDIR'].first)}_\n" \
+    "\n"
   end
 
   def convert_direction(dir)

@@ -35,14 +35,14 @@ class SurfForecaster
       { error: 'Error processing the request' }
     end
 
-    def get_spot_forecast(spot_id, initstr)
-      options = build_forecast_query(spot_id, initstr)
+    def get_spot_forecast(spot_id, model, initstr)
+      options = build_forecast_query(spot_id, model, initstr)
       options.merge!(@http_headers)
 
       response = HTTParty.get("#{@base_uri}/int/iapi.php", options)
       return unless response.code
 
-      process_forecast_response(spot_id, response)
+      process_forecast_response(spot_id, model, response)
     rescue StandardError => e
       puts e.full_message
       { error: 'Error processing the request' }
@@ -68,14 +68,11 @@ class SurfForecaster
       }
     end
 
-    def build_forecast_query(spot_id, initstr)
+    def build_forecast_query(spot_id, model_id, initstr)
       {
         query: {
           id_spot: spot_id,
-          # Forecast based on NWW3 wave forecast model with resolution of about 50 km.
-          # Updates 4 times per day and offers forecast for 180 hours.
-          # Data source: NOAA (American weather service)
-          id_model: 25,
+          id_model: model_id,
           q: 'forecast',
           initstr: initstr
         }
@@ -97,12 +94,12 @@ class SurfForecaster
       }
     end
 
-    def process_forecast_response(spot_id, response)
+    def process_forecast_response(spot_id, model_id, response)
       data_vars = response.dig('fcst', 'vars')
 
       {
         spot_id: spot_id,
-        model_id: 25,
+        model_id: model_id,
         model_name: response.dig('wgmodel', 'model_name'),
         updated_at: response.dig('fcst', 'update_last'),
         data: data_vars.map do |var|
