@@ -26,7 +26,7 @@ class App < Sinatra::Base
   end
 
   set :slack_secret, ENV['SLACK_SIGNING_SECRET']
-  commands_endpoint '/slack/commands', quick_reply: ':surfer: ...'
+  commands_endpoint '/slack/commands'
   actions_endpoint '/slack/actions'
 
   command '/surf *granularity :spot_name' do |granularity, spot_name|
@@ -61,14 +61,15 @@ class App < Sinatra::Base
     end
   end
 
-  def build_forecast_message(forecast_info)
+  def build_forecast_message(info)
     location_map = "https://#{request.host}/staticmap/" \
-                  "#{forecast_info[:lon]},#{forecast_info[:lat]}"
+                  "#{info[:lon]},#{info[:lat]}"
 
     slack_response 'spot_info' do |r|
-      r.text = 'Here is the spot information:'
+      r.mrkdwn = true
+      r.text = format_forecast_info(info)
       r.attachment do |a|
-        a.title = "Spot location: #{forecast_info[:name]}"
+        a.title = 'Spot location'
         a.image_url = location_map
       end
     end
@@ -77,7 +78,29 @@ class App < Sinatra::Base
   def fetch_forecast_and_respond(_granularity, spot_id)
     info = SurfForecaster.get_spot_info(spot_id)
     forecast = SurfForecaster.get_spot_forecast(spot_id, info[:initstr])
-    info.merge!(forecast)
+    info.merge!(forecast) if forecast
+
     build_forecast_message(info)
+  end
+
+  def format_forecast_info(info)
+    data = info[:data]
+    "Here is the information for _*#{info[:name]}*_ \n\n" \
+    "*Wave (m)*:           _#{data['HTSGW'].first}_\n" \
+    "*Wave Period (s)*:    _#{data['PERPW'].first}_\n" \
+    "*Wave Direction *:    _#{convert_direction(data['DIRPW'].first)}_\n\n" \
+  end
+
+  def convert_direction(dir)
+    case dir
+    when 0..45 then 'N'
+    when 46..90 then 'NE'
+    when 91..135 then 'E'
+    when 136..180 then 'SE'
+    when 181..225 then 'S'
+    when 226..270 then 'SW'
+    when 271..315 then 'W'
+    else 'NW'
+    end
   end
 end

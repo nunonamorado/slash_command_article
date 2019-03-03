@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/nunonamorado/sinatra-slack.git
-  revision: e7b7bd3a4dcc2e2cdd219a445d7ad52770a5c23e
+  revision: a641a93d81db5233dabe8f444de48cce6632e672
   specs:
-    sinatra-slack (0.7.5)
+    sinatra-slack (0.7.8)
       async_sinatra (~> 1.3.0)
       httparty (~> 0.16.4)
       mustermann (~> 1.0.3)
