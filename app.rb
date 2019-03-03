@@ -26,7 +26,8 @@ class App < Sinatra::Base
   end
 
   set :slack_secret, ENV['SLACK_SIGNING_SECRET']
-  commands_endpoint '/slack/commands'
+  commands_endpoint '/slack/commands',
+                    quick_reply: ':male_genie: Sim Sim Salabim'
   actions_endpoint '/slack/actions'
 
   command '/surf *granularity :spot_name' do |granularity, spot_name|
@@ -41,6 +42,7 @@ class App < Sinatra::Base
 
   def process_command(granularity, spot_name)
     spots = SurfForecaster.search_spot(spot_name)
+    return no_results_response if spots.size.zero?
 
     if spots.size == 1
       spot_id = spots.first['data']
@@ -81,11 +83,17 @@ class App < Sinatra::Base
     [25, 3].each do |model|
       forecast = SurfForecaster.get_spot_forecast(
         spot_id, model, info[:initstr]
-        )
+      )
       info["model#{model}".to_sym] = forecast if forecast
     end
 
     build_forecast_message(info)
+  end
+
+  def no_results_response
+    slack_response '' do |r|
+      r.text = 'Nothing on the books, pal!'
+    end
   end
 
   def format_forecast_info(info)
