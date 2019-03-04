@@ -6,6 +6,6 @@
     },
     "env": {
         "SLACK_SIGNING_SECRET": "@slack-signing-secret",
-        "SLACK_VERIFICATION_TOKEN": "@slack-verification-token"
+        "MAPBOX_API_TOKEN": "@mapbox-api-token"
     }
 }
