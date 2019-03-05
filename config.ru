@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require 'rubygems'
-require 'sinatra/slack'
+require 'dotenv/load'
 require 'pry'
 
 require File.expand_path 'app.rb', __dir__
