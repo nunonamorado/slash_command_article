@@ -6,7 +6,7 @@ gem "rack-reverse-proxy"
 gem "httparty"
 gem "sinatra-slack"
 
-gem "dotenv", groups: [:development, :test]
+gem "dotenv"
 
 group :development do
   gem "pry"

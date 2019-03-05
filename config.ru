@@ -2,8 +2,8 @@
 # frozen_string_literal: true
 
 require 'rubygems'
-require 'dotenv/load'
 require 'pry'
+require 'dotenv/load'
 
 require File.expand_path 'app.rb', __dir__
 
