@@ -1,7 +1,7 @@
 FROM ruby:2.5.3-stretch
 
 RUN gem install bundler
-RUN gem install eventmachine -v '1.2.7' --source 'https://rubygems.org/'
+RUN gem install eventmachine
 
 # throw errors if Gemfile has been modified since Gemfile.lock
 RUN bundle config --global frozen 1
