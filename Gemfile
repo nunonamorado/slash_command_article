@@ -4,7 +4,7 @@ gem "sinatra"
 gem "thin"
 gem "rack-reverse-proxy"
 gem "httparty"
-gem "sinatra-slack", :git => 'https://github.com/nunonamorado/sinatra-slack.git'
+gem "sinatra-slack"
 
 gem "dotenv", groups: [:development, :test]
 
