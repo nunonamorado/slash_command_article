@@ -13,9 +13,7 @@ RUN bundle install --without development test
 
 COPY . .
 
-EXPOSE 3000
-
 ARG SLACK_SIGNING_SECRET
 ARG MAPBOX_API_TOKEN
 
-CMD ["bundle", "exec", "rackup"]
+CMD bundle exec rackup --host 0.0.0.0 -p $PORT
