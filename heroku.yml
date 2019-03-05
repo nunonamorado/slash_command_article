@@ -1,8 +1,5 @@
 build:
   docker:
     web: Dockerfile
-  config:
-    MAPBOX_API_TOKEN: 
-    SLACK_SIGNING_SECRET: 
 run:
   web: bundle exec rackup --host 0.0.0.0 -p $PORT
