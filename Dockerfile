@@ -1,4 +1,4 @@
-FROM ruby:2.5.3
+FROM ruby:2.5.3-stretch
 
 RUN gem install bundler
 RUN gem install eventmachine -v '1.2.7' --source 'https://rubygems.org/'
