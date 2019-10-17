@@ -68,6 +68,7 @@ class App < Sinatra::Base
                   "#{info[:lon]},#{info[:lat]}"
 
     slack_response 'spot_info' do |r|
+      r.response_type = 'in_channel'      
       r.mrkdwn = true
       r.text = format_forecast_info(info)
       r.attachment do |a|
