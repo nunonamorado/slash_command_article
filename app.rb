@@ -64,17 +64,28 @@ class App < Sinatra::Base
   end
 
   def build_forecast_message(info)
+    forecast_info = format_forecast_info(info)
+    return error_message unless forecast_info
+
     location_map = "https://#{request.host}/staticmap/" \
                   "#{info[:lon]},#{info[:lat]}"
 
     slack_response 'spot_info' do |r|
-      r.response_type = 'in_channel'      
+      r.response_type = 'in_channel'
+      r.delete_original = true
       r.mrkdwn = true
-      r.text = format_forecast_info(info)
+      r.text = forecast_info
       r.attachment do |a|
         a.title = 'Spot location'
         a.image_url = location_map
       end
+    end
+  end
+
+  def error_message
+    slack_response '' do |r|
+      r.text = 'Ups, something went wrong'
+      r.delete_original = true
     end
   end
 
@@ -100,6 +111,8 @@ class App < Sinatra::Base
   def format_forecast_info(info)
     data_m3 = info.dig(:model3, :data)
     data_m25 = info.dig(:model25, :data)
+
+    return if data_m3.nil? || data_m25.nil?
 
     "Here is the information for _*#{info[:name]}*_ \n\n" \
     "*Wave (m)*:             _#{data_m25['HTSGW'].first}_\n" \
