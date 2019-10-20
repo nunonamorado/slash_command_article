@@ -29,12 +29,8 @@ class App < Sinatra::Base
 
   set :slack_secret, SLACK_SIGNING_SECRET
   commands_endpoint '/slack/commands',
-                    quick_reply: ':male_genie: Sim Sim Salabim'
+                    quick_reply: ':male_genie: Sim Sim Salabim :surfer:'
   actions_endpoint '/slack/actions'
-
-  get '/slack' do
-    process_command 'today', 'carcavelos'
-  end
 
   command '/surf *granularity :spot_name' do |granularity, spot_name|
     process_command granularity, spot_name
